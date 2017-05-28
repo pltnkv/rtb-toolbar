@@ -149,6 +149,7 @@
 	            var currentDraggingItem;
 	            var currentDraggingItemIndex;
 	            var widgetDummy;
+	            var startTime;
 	            function onDown(e) {
 	                e.preventDefault();
 	                maxIndex = customizedItems.length - 1;
@@ -160,6 +161,7 @@
 	                if (currentDraggingItem) {
 	                    currentDraggingItem.addClass('tool-item--dragging');
 	                    currentDraggingItemIndex = customizedItems.findIndex(function (el) { return el === currentDraggingItem; });
+	                    startTime = Date.now();
 	                }
 	                document.addEventListener('mousemove', onMove);
 	                document.addEventListener('mouseup', onUp);
@@ -202,9 +204,10 @@
 	                    });
 	                }
 	                else {
-	                    var xDelta = Math.abs(startPos.x - e.clientX);
-	                    var yDelta = Math.abs(startPos.y - e.clientY);
-	                    if (xDelta > 5 || (xDelta > 3 && yDelta > 5)) {
+	                    var deltaX = Math.abs(startPos.x - e.clientX);
+	                    var deltaY = Math.abs(startPos.y - e.clientY);
+	                    var deltaTime = Date.now() - startTime;
+	                    if (deltaX > 5) {
 	                        draggingWidget = true;
 	                        widgetDummy = createWidgetDummy();
 	                        widgetDummy.css({
@@ -216,7 +219,7 @@
 	                            widgetDummy.addClass('widget-dummy--active').addClass('widget-dummy--dragging');
 	                        });
 	                    }
-	                    else if (yDelta > 5) {
+	                    else if (deltaY > 5 && deltaTime > 60) {
 	                        draggingTool = true;
 	                    }
 	                }
