@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Fast prototyping</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <style>
+        html, body {
+            padding: 0;
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font: 14px OpenSans, Arial, Helvetica, sans-serif;
+            font-family: OpenSans, sans-serif;
+            background-color: #f2f2f2;
+            user-select: none;
+        }
+
+        .main-container {
+            display: flex;
+            height: 100%;
+            position: relative;
+            z-index: 1;
+        }
+
+        .canvas {
+            height: 100%;
+            position: relative;
+        }
+
+        .warning-box {
+            color: #FFF;
+            background-color: rgba(0, 0, 0, 0.6);
+            padding: 20px;
+            border-radius: 10px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            z-index: 2;
+            font-size: 18px;
+            opacity: 0;
+            transition: opacity 0.1s ease-in;
+            pointer-events: none;
+        }
+
+        .warning-box--visible {
+            opacity: 1;
+        }
+
+        /************************************
+        * Sidebar
+        ************************************/
+
+        .sidebar {
+            height: 100%;
+            flex-shrink: 0;
+            background-color: #FFF;
+            position: relative;
+            box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.2);
+            width: 320px;
+            padding: 30px 10px 20px 20px;
+        }
+
+        .sidebar-item {
+            box-sizing: border-box;
+            float: left;
+            width: 96px;
+            height: 96px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            padding-top: 15px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .sidebar-item:hover {
+            border: 1px solid rgba(0, 0, 0, .08);
+        }
+
+        .sidebar-item img {
+            pointer-events: none;
+        }
+
+        .sidebar-item__title {
+            pointer-events: none;
+            text-align: center;
+            margin-top: 8px;
+            color: #666;
+            font-size: 13px;
+        }
+
+        .dragging-catalog-item {
+            border: 1px solid transparent;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 10;
+        }
+
+        .dragging-catalog-item--removing {
+            transition: transform 0.6s ease-out, opacity 0.3s ease-out;
+        }
+
+        /************************************
+        * Toolbar
+        ************************************/
+
+        .tools-box {
+            padding: 5px 0 15px 0;
+            top: 160px;
+            left: 10px;
+            z-index: 1;
+            position: absolute;
+            transition: height 0.2s linear;
+            border-radius: 4px;
+            background-color: #ffffff;
+            box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.2);
+        }
+
+        .tools-box::after {
+            content: '';
+            display: block;
+            background-image: url('img/trash.svg');
+            background-repeat: no-repeat;
+            background-position: center;
+            position: absolute;
+            top: 183px;
+            left: 70px;
+            width: 60px;
+            height: 50px;
+            opacity: 0;
+            transition: opacity 0.4s ease-out;
+        }
+
+        .tools-box--dragging::after {
+            opacity: 0.4;
+        }
+
+        .tool-item {
+            cursor: pointer;
+            width: 60px;
+            height: 50px;
+            padding: 5px 0 0 10px;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        .tool-item img {
+            width: 24px;
+        }
+
+        .tool-item:hover .tool-item__inner {
+            box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.2);
+        }
+
+        .tool-item__inner {
+            width: 40px;
+            height: 40px;
+            border-radius: 4px;
+            background-color: #FFF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+            transition: opacity 0.2s linear, box-shadow 0.1s linear;
+        }
+
+        .tool-item--customized {
+            position: absolute;
+            transition: opacity 0.2s linear, top 0.2s linear, left 0.2s linear;
+        }
+
+        .tool-item--dragging {
+            z-index: 1;
+            transition: opacity 0.2s linear;
+        }
+
+        .tool-item--dragging::after {
+            content: 'remove';
+            display: block;
+            background-color: rgba(0, 0, 0, 0.6);
+            color: #FFF;
+            padding: 5px 10px;
+            position: absolute;
+            top: 10px;
+            left: 60px;
+            border-radius: 4px;
+            opacity: 0;
+            transition: opacity 0.2s linear;
+        }
+
+        .board-toolbar__static-box .tool-item:active .tool-item__inner,
+        .tool-item--dragging .tool-item__inner {
+            background-color: #f2f2f2;
+        }
+
+        .tool-item--removed .tool-item__inner {
+            opacity: 0.4;
+        }
+
+        .tool-item--removed::after {
+            opacity: 1;
+        }
+
+        /* .board-toolbar__static */
+
+        .board-toolbar__static-box img {
+            opacity: 0.4;
+        }
+
+        .board-toolbar__static-box::after {
+            content: '';
+            display: block;
+            width: 24px;
+            height: 1px;
+            opacity: 0.2;
+            background-color: #1c1f21;
+            margin-left: 18px;
+            margin-top: 5px;
+            margin-bottom: 5px;
+        }
+
+        .board-toolbar__customized-box {
+            position: absolute;
+        }
+
+        .widget-dummy {
+            position: absolute;
+            width: 200px;
+            height: 100px;
+            border: 1px solid #CCC;
+            background-color: #FFF;
+            border-radius: 4px;
+            color: #AAA;
+            font-size: 18px;
+            text-align: center;
+            line-height: 100px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: opacity 0.2s linear, transform 0.2s linear;
+            opacity: 0;
+            transform: scale(0.5);
+            margin: -50px 0 0 -100px;
+            pointer-events: none;
+        }
+
+        .widget-dummy--dragging {
+            z-index: 5;
+        }
+
+        .widget-dummy--active {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+
+    </style>
+
+    <script type="text/javascript" src="libs/jquery-3.1.1.min.js"></script>
+    <script type="text/javascript" src="libs/angular.min.js"></script>
+</head>
+<body>
+<div class="main-container" ng-controller="WelcomeController">
+    <div class="sidebar" ng-show="sidebarVisible">
+        <div class="sidebar-item"
+             ng-repeat="item in sidebarItems"
+             ng-mousedown="onItemDown($event, item)">
+            <img ng-src="{{item.icon}}">
+            <div class="sidebar-item__title">{{item.title}}</div>
+        </div>
+    </div>
+    <div class="canvas">
+        <div class="tools-box"
+             sortable-list
+             static-tools="staticTools"
+             custom-tools="customTools"
+             on-sidebar-toggle="onSidebarToggle()">
+        </div>
+    </div>
+</div>
+<div>
+</div>
+<script type="text/javascript" src="main.js"></script></body>
+</html>

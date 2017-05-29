@@ -219,7 +219,7 @@
 	                            widgetDummy.addClass('widget-dummy--active').addClass('widget-dummy--dragging');
 	                        });
 	                    }
-	                    else if (deltaY > 5 && deltaTime > 60) {
+	                    else if (deltaY > 20 && deltaTime > 60) {
 	                        draggingTool = true;
 	                    }
 	                }
