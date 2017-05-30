@@ -1,0 +1,9 @@
+.idea
+.tscache
+*.iml
+.baseDir.ts
+target
+node_modules
+pom.xml.versionsBackup
+.DS_Store
+*.tmp.txt

@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "baseUrl": "./",
+    "strictNullChecks": true,
+    "target": "ES6"
+  },
+  "include": [
+    "./**/*"
+  ],
+  "files": [
+    "../node_modules/@types/angular/index.d.ts",
+    "../types/polyfills/Array.d.ts",
+    "../types/polyfills/String.d.ts",
+    "../types/logger.d.ts",
+    "../types/require.d.ts",
+    "../types/jquery.d.ts",
+    "../types/NDollarRecognizer.d.ts"
+  ]
+}
